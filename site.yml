@@ -1,0 +1,18 @@
+---
+- hosts: fetch2
+  user: root
+  tasks:
+    - raw: pacman -Sy --noconfirm python2
+    - name: give wheel group passwordless sudo
+      copy: src=files/wheel dest=/etc/sudoers.d/ owner=root group=root mode=0600
+    - user: name=ryantm createhome=yes state=present groups=wheel
+- hosts: fetch2
+  user: ryantm
+  tasks:
+    - authorized_key: user=ryantm key="{{ lookup('file', 'files/id_rsa.pub') }}"
+    - pacman: name=dovecot
+    - name: install yaourt AUR package manager helper
+      script: scripts/install-yaourt >> install-yaourt-log.txt
+    - name: install rss2email
+      shell: yaourt -S --noconfirm rss2email
+    
